@@ -85,6 +85,8 @@ Options:
 * `viewDistance` view radius, in chunks, default: `6`
 * `firstPerson` is the view first person ? default: `false`
 * `port` the port for the webserver, default: `3000`
+* `followCamera` when the bot spectates an entity (`/spectate`), show that entity's view instead of the bot's own, default: `false`
+* `follow` in third person, keep the orbit centred on the view as it moves instead of only on the first update, default: `false`
 
 Players are rendered with their skin, wide or slim, and cape when the server sends skin data (online-mode servers).
 
