@@ -9,10 +9,11 @@ const blockedIndexFiles = ['blocksB2J', 'blocksJ2B', 'blockMappings', 'steve', '
 
 // PRISMARINE_VIEWER_VERSIONS=26.3 (comma separated) builds for those versions only. The worker
 // bundles each version's block, biome and tint data, which for every version is tens of MB; with
-// this, only the minecraft-data folders those versions read from (per dataPaths.json) go in.
+// this, only the minecraft-data folders those versions read from (per dataPaths.json) go in, plus
+// pc/common and bedrock/common, which minecraft-data's index reads on load for every version.
 const onlyVersions = process.env.PRISMARINE_VIEWER_VERSIONS?.split(',').map(v => v.trim()).filter(Boolean)
-const keptFolders = onlyVersions && new Set(onlyVersions.flatMap(version =>
-  Object.values(require('minecraft-data/minecraft-data/data/dataPaths.json').pc[version] ?? {})))
+const keptFolders = onlyVersions && new Set(['pc/common', 'bedrock/common', ...onlyVersions.flatMap(version =>
+  Object.values(require('minecraft-data/minecraft-data/data/dataPaths.json').pc[version] ?? {}))])
 function otherVersionData (req) {
   if (!keptFolders) return false
   const folder = req.request.replace(/\\/g, '/').match(/\/data\/((?:pc|bedrock)\/[^/]+)\//)?.[1]
