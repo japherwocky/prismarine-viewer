@@ -12,7 +12,7 @@ if (!global.self) {
 
 const { Vec3 } = require('vec3')
 const { World } = require('./world')
-const { getSectionGeometry } = require('./models')
+const { getSectionGeometry, setVersion } = require('./models')
 
 let blocksStates = null
 let world = null
@@ -42,6 +42,7 @@ function setSectionDirty (pos, value = true) {
 self.onmessage = ({ data }) => {
   if (data.type === 'version') {
     world = new World(data.version)
+    setVersion(data.version)
   } else if (data.type === 'blockStates') {
     blocksStates = data.json
   } else if (data.type === 'dirty') {

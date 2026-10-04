@@ -1,14 +1,23 @@
 const { Vec3 } = require('vec3')
 
-const tints = require('minecraft-data')('1.16.2').tints
+// Biome and block tints for the version being drawn, set by setVersion. They used to be 1.16.2's
+// for every version, so biomes added since (cherry grove, mangrove swamp, pale garden...) all got
+// the default colour. A version with no tints data in minecraft-data still borrows 1.16.2's, and
+// a table with no default colour -- the 26.x generators write none -- uses 1.16.2's defaults.
+const fallbackDefaults = { grass: 0x79c05a, foliage: 0x59ae30, water: 0x3f76e4, redstone: 0x4b0000, constant: 0 }
+let tints = null
 
-for (const key of Object.keys(tints)) {
-  tints[key] = prepareTints(tints[key])
+function setVersion (version) {
+  const data = require('minecraft-data')(version)?.tints ?? require('minecraft-data')('1.16.2').tints
+  tints = {}
+  for (const key of Object.keys(data)) {
+    tints[key] = prepareTints(data[key], fallbackDefaults[key])
+  }
 }
 
-function prepareTints (tints) {
+function prepareTints (tints, fallbackDefault = 0xffffff) {
   const map = new Map()
-  const defaultValue = tintToGl(tints.default)
+  const defaultValue = tintToGl(tints.default ?? fallbackDefault)
   for (let { keys, color } of tints.data) {
     color = tintToGl(color)
     for (const key of keys) {
@@ -513,4 +522,4 @@ function getModelVariants (block, blockStates) {
   return []
 }
 
-module.exports = { getSectionGeometry }
+module.exports = { getSectionGeometry, setVersion }

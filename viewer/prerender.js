@@ -45,3 +45,10 @@ for (const version of supportedVersions) {
 
   fs.copySync(assets.directory, path.resolve(texturesPath, version), { overwrite: true })
 }
+
+// Entities are drawn with 1.16.4's textures whatever the version (viewer/lib/entities.js), so a
+// build for other versions only still needs those
+const entityTexturesVersion = '1.16.4'
+if (!supportedVersions.includes(entityTexturesVersion)) {
+  fs.copySync(mcAssets(entityTexturesVersion).directory, path.resolve(texturesPath, entityTexturesVersion), { overwrite: true })
+}
