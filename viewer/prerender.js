@@ -5,7 +5,10 @@ const mcAssets = require('minecraft-assets')
 const Chunks = require('prismarine-chunk')
 const fs = require('fs-extra')
 
+// PRISMARINE_VIEWER_VERSIONS=26.3 (comma separated) prepares those versions only; see webpack.config.js
+const onlyVersions = process.env.PRISMARINE_VIEWER_VERSIONS?.split(',').map(v => v.trim()).filter(Boolean)
 const supportedVersions = require('./lib/version').supportedVersions
+  .filter(version => !onlyVersions || onlyVersions.includes(version))
 
 // World bounds come from prismarine-chunk, which is a build-time dependency here.
 // Emitting them lets the browser fetch the answer instead of bundling

@@ -6,6 +6,18 @@ const path = require('path')
 // Minify the index.js by removing unused minecraft data. Since the worker only needs to do meshing,
 // we can remove all the other data unrelated to meshing.
 const blockedIndexFiles = ['blocksB2J', 'blocksJ2B', 'blockMappings', 'steve', 'recipes']
+
+// PRISMARINE_VIEWER_VERSIONS=26.3 (comma separated) builds for those versions only. The worker
+// bundles each version's block, biome and tint data, which for every version is tens of MB; with
+// this, only the minecraft-data folders those versions read from (per dataPaths.json) go in.
+const onlyVersions = process.env.PRISMARINE_VIEWER_VERSIONS?.split(',').map(v => v.trim()).filter(Boolean)
+const keptFolders = onlyVersions && new Set(onlyVersions.flatMap(version =>
+  Object.values(require('minecraft-data/minecraft-data/data/dataPaths.json').pc[version] ?? {})))
+function otherVersionData (req) {
+  if (!keptFolders) return false
+  const folder = req.request.replace(/\\/g, '/').match(/\/data\/((?:pc|bedrock)\/[^/]+)\//)?.[1]
+  return folder !== undefined && !keptFolders.has(folder)
+}
 const allowedWorkerFiles = ['blocks', 'blockCollisionShapes', 'tints', 'blockStates',
   'biomes', 'features', 'version', 'legacy', 'versions', 'version', 'protocolVersions']
 
@@ -49,7 +61,7 @@ const indexConfig = {
     function (req, cb) {
       if (req.context.includes('minecraft-data') && req.request.endsWith('.json')) {
         const fileName = req.request.split('/').pop().replace('.json', '')
-        if (blockedIndexFiles.includes(fileName)) {
+        if (blockedIndexFiles.includes(fileName) || otherVersionData(req)) {
           cb(null, [])
           return
         }
@@ -84,7 +96,7 @@ const workerConfig = {
     function (req, cb) {
       if (req.context.includes('minecraft-data') && req.request.endsWith('.json')) {
         const fileName = req.request.split('/').pop().replace('.json', '')
-        if (!allowedWorkerFiles.includes(fileName)) {
+        if (!allowedWorkerFiles.includes(fileName) || otherVersionData(req)) {
           cb(null, [])
           return
         }
